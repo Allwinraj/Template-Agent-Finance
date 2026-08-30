@@ -1,0 +1,750 @@
+[
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:42",
+    "run_id": "run-20260828-c320c1",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1000 (amount 3377.42)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:42"
+    ],
+    "exception_id": "exc-10001",
+    "created_at": "2026-08-28T17:30:19.104347+00:00",
+    "id": "000001"
+  },
+  {
+    "business_key": "test-key-1",
+    "run_id": "test-run",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "test exception",
+    "proposed_action": "review",
+    "evidence": [
+      "file.csv:1"
+    ],
+    "exception_id": "exc-10002",
+    "created_at": "2026-08-28T17:30:19.189299+00:00",
+    "id": "000002"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:42",
+    "run_id": "run-20260829-c140c4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1000 (amount 3377.42)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:42"
+    ],
+    "exception_id": "exc-10003",
+    "created_at": "2026-08-29T05:10:58.425026+00:00",
+    "id": "000003"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:2",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1000 (amount 3377.42)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:2"
+    ],
+    "exception_id": "exc-10004",
+    "created_at": "2026-08-30T12:29:51.700241+00:00",
+    "id": "000004"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:3",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1001 (amount 1602.01)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:3"
+    ],
+    "exception_id": "exc-10005",
+    "created_at": "2026-08-30T12:29:51.732758+00:00",
+    "id": "000005"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:4",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1002 (amount 3545.15)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:4"
+    ],
+    "exception_id": "exc-10006",
+    "created_at": "2026-08-30T12:29:51.746236+00:00",
+    "id": "000006"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:5",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1003 (amount 2398.65)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:5"
+    ],
+    "exception_id": "exc-10007",
+    "created_at": "2026-08-30T12:29:51.761195+00:00",
+    "id": "000007"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:6",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1004 (amount 1546.97)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:6"
+    ],
+    "exception_id": "exc-10008",
+    "created_at": "2026-08-30T12:29:51.770171+00:00",
+    "id": "000008"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:7",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1005 (amount 1394.77)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:7"
+    ],
+    "exception_id": "exc-10009",
+    "created_at": "2026-08-30T12:29:51.781146+00:00",
+    "id": "000009"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:8",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1006 (amount 2387.84)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:8"
+    ],
+    "exception_id": "exc-10010",
+    "created_at": "2026-08-30T12:29:51.792150+00:00",
+    "id": "000010"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:9",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1007 (amount 4142.44)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:9"
+    ],
+    "exception_id": "exc-10011",
+    "created_at": "2026-08-30T12:29:51.803122+00:00",
+    "id": "000011"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:10",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1008 (amount 1218.47)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:10"
+    ],
+    "exception_id": "exc-10012",
+    "created_at": "2026-08-30T12:29:51.817085+00:00",
+    "id": "000012"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:11",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1009 (amount 1199.66)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:11"
+    ],
+    "exception_id": "exc-10013",
+    "created_at": "2026-08-30T12:29:51.830050+00:00",
+    "id": "000013"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:12",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1010 (amount 917.36)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:12"
+    ],
+    "exception_id": "exc-10014",
+    "created_at": "2026-08-30T12:29:51.841021+00:00",
+    "id": "000014"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:13",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1011 (amount 2047.8)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:13"
+    ],
+    "exception_id": "exc-10015",
+    "created_at": "2026-08-30T12:29:51.851991+00:00",
+    "id": "000015"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:14",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1012 (amount 3783.79)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:14"
+    ],
+    "exception_id": "exc-10016",
+    "created_at": "2026-08-30T12:29:51.863961+00:00",
+    "id": "000016"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:15",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1013 (amount 4650.33)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:15"
+    ],
+    "exception_id": "exc-10017",
+    "created_at": "2026-08-30T12:29:51.874930+00:00",
+    "id": "000017"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:16",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1014 (amount 4232.32)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:16"
+    ],
+    "exception_id": "exc-10018",
+    "created_at": "2026-08-30T12:29:51.888896+00:00",
+    "id": "000018"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:17",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1015 (amount 3098.08)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:17"
+    ],
+    "exception_id": "exc-10019",
+    "created_at": "2026-08-30T12:29:51.900379+00:00",
+    "id": "000019"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:18",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1016 (amount 3475.68)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:18"
+    ],
+    "exception_id": "exc-10020",
+    "created_at": "2026-08-30T12:29:51.910353+00:00",
+    "id": "000020"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:19",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1017 (amount 859.06)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:19"
+    ],
+    "exception_id": "exc-10021",
+    "created_at": "2026-08-30T12:29:51.923319+00:00",
+    "id": "000021"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:20",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1018 (amount 1750.88)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:20"
+    ],
+    "exception_id": "exc-10022",
+    "created_at": "2026-08-30T12:29:51.935287+00:00",
+    "id": "000022"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:21",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1019 (amount 1231.94)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:21"
+    ],
+    "exception_id": "exc-10023",
+    "created_at": "2026-08-30T12:29:51.945260+00:00",
+    "id": "000023"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:22",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1020 (amount 1701.4)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:22"
+    ],
+    "exception_id": "exc-10024",
+    "created_at": "2026-08-30T12:29:51.962214+00:00",
+    "id": "000024"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:23",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1021 (amount 3241.09)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:23"
+    ],
+    "exception_id": "exc-10025",
+    "created_at": "2026-08-30T12:29:51.976180+00:00",
+    "id": "000025"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:24",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1022 (amount 1601.65)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:24"
+    ],
+    "exception_id": "exc-10026",
+    "created_at": "2026-08-30T12:29:51.989696+00:00",
+    "id": "000026"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:25",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1023 (amount 4952.86)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:25"
+    ],
+    "exception_id": "exc-10027",
+    "created_at": "2026-08-30T12:29:52.000817+00:00",
+    "id": "000027"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:26",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1024 (amount 1488.27)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:26"
+    ],
+    "exception_id": "exc-10028",
+    "created_at": "2026-08-30T12:29:52.014780+00:00",
+    "id": "000028"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:27",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1025 (amount 3992.0)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:27"
+    ],
+    "exception_id": "exc-10029",
+    "created_at": "2026-08-30T12:29:52.026745+00:00",
+    "id": "000029"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:28",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1026 (amount 4122.71)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:28"
+    ],
+    "exception_id": "exc-10030",
+    "created_at": "2026-08-30T12:29:52.039712+00:00",
+    "id": "000030"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:29",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1027 (amount 1449.42)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:29"
+    ],
+    "exception_id": "exc-10031",
+    "created_at": "2026-08-30T12:29:52.066484+00:00",
+    "id": "000031"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:30",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1028 (amount 1456.82)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:30"
+    ],
+    "exception_id": "exc-10032",
+    "created_at": "2026-08-30T12:29:52.076491+00:00",
+    "id": "000032"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:31",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1029 (amount 4615.46)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:31"
+    ],
+    "exception_id": "exc-10033",
+    "created_at": "2026-08-30T12:29:52.097909+00:00",
+    "id": "000033"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:32",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1030 (amount 1128.34)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:32"
+    ],
+    "exception_id": "exc-10034",
+    "created_at": "2026-08-30T12:29:52.109877+00:00",
+    "id": "000034"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:33",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1031 (amount 1682.34)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:33"
+    ],
+    "exception_id": "exc-10035",
+    "created_at": "2026-08-30T12:29:52.124877+00:00",
+    "id": "000035"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:34",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1032 (amount 3125.9)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:34"
+    ],
+    "exception_id": "exc-10036",
+    "created_at": "2026-08-30T12:29:52.136876+00:00",
+    "id": "000036"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:35",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1033 (amount 4988.92)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:35"
+    ],
+    "exception_id": "exc-10037",
+    "created_at": "2026-08-30T12:29:52.149811+00:00",
+    "id": "000037"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:36",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1034 (amount 3901.02)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:36"
+    ],
+    "exception_id": "exc-10038",
+    "created_at": "2026-08-30T12:29:52.159782+00:00",
+    "id": "000038"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:37",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1035 (amount 3323.51)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:37"
+    ],
+    "exception_id": "exc-10039",
+    "created_at": "2026-08-30T12:29:52.174744+00:00",
+    "id": "000039"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:38",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1036 (amount 3183.84)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:38"
+    ],
+    "exception_id": "exc-10040",
+    "created_at": "2026-08-30T12:29:52.188711+00:00",
+    "id": "000040"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:39",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1037 (amount 4982.55)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:39"
+    ],
+    "exception_id": "exc-10041",
+    "created_at": "2026-08-30T12:29:52.202185+00:00",
+    "id": "000041"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:40",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1038 (amount 2989.52)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:40"
+    ],
+    "exception_id": "exc-10042",
+    "created_at": "2026-08-30T12:29:52.242478+00:00",
+    "id": "000042"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:41",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1039 (amount 1015.48)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:41"
+    ],
+    "exception_id": "exc-10043",
+    "created_at": "2026-08-30T12:29:52.256441+00:00",
+    "id": "000043"
+  },
+  {
+    "business_key": "wf-0001:1000:bank_statement.csv:42",
+    "run_id": "run-20260830-4f51f4",
+    "type": "unmatched_record",
+    "severity": "medium",
+    "status": "assigned",
+    "owner_queue": "finance_operations",
+    "assigned_to": "reviewer-17",
+    "reason": "No counterpart found for INV-1000 (amount 3377.42)",
+    "proposed_action": "Review and accept, reject, or correct",
+    "evidence": [
+      "bank_statement.csv:42"
+    ],
+    "exception_id": "exc-10044",
+    "created_at": "2026-08-30T12:29:52.268409+00:00",
+    "id": "000044"
+  }
+]

@@ -1,0 +1,1629 @@
+[
+  {
+    "workflow_id": "wf-0001",
+    "name": "Bank-to-GL Reconciliation",
+    "description": "Match bank statement lines to GL entries and review differences.",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ],
+      "sources": [
+        {
+          "role": "bank_statement",
+          "file": "bank_statement.csv",
+          "required_fields": [
+            "Value Date",
+            "Amount",
+            "Reference"
+          ],
+          "field_mappings": {
+            "Value Date": "transaction_date",
+            "Amount": "amount",
+            "Reference": "reference",
+            "Description": "description"
+          }
+        },
+        {
+          "role": "gl_export",
+          "file": "sap_gl_export.csv",
+          "required_fields": [
+            "Posting Date",
+            "Amount in LC",
+            "Assignment"
+          ],
+          "field_mappings": {
+            "Posting Date": "transaction_date",
+            "Amount in LC": "amount",
+            "Assignment": "reference",
+            "Document Number": "document_no"
+          }
+        }
+      ],
+      "matching": {
+        "keys": [
+          "amount",
+          "reference"
+        ],
+        "date_tolerance_days": 3,
+        "amount_tolerance": 1.0
+      },
+      "calculations": [
+        {
+          "id": "calc_amount_diff",
+          "calculator": "amount_difference",
+          "input_mapping": {
+            "a": "amount",
+            "b": "matched_amount"
+          }
+        },
+        {
+          "id": "calc_date_diff",
+          "calculator": "date_difference",
+          "input_mapping": {
+            "date_1": "transaction_date",
+            "date_2": "gl_posting_date"
+          }
+        }
+      ],
+      "rules": [
+        {
+          "id": "tolerance_check",
+          "params": {
+            "tolerance": 1.0,
+            "field": "amount_diff"
+          }
+        },
+        {
+          "id": "low_confidence_review",
+          "params": {
+            "threshold": 0.8
+          }
+        }
+      ],
+      "routing": {
+        "unmatched": "finance_operations",
+        "high_value": "controller",
+        "high_value_threshold": 100000
+      },
+      "report": {
+        "title": "Bank-to-GL Reconciliation Report",
+        "audience": "finance_operations"
+      }
+    },
+    "version": 1,
+    "status": "published",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": "controller_1",
+    "created_at": "2026-08-28T17:30:18.897047+00:00",
+    "published_at": "2026-08-28T17:30:18.921980+00:00",
+    "id": "000001"
+  },
+  {
+    "workflow_id": "wf-0002",
+    "name": "Budget-vs-Actual Analysis",
+    "description": "Compare actual financial results with an approved budget and explain material differences by account, entity, cost center, and period.",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "template": "period_comparison",
+      "sources": [
+        {
+          "role": "actuals",
+          "label": "SAP Actuals",
+          "file": "budget_actuals.csv",
+          "required_fields": [
+            "Company Code",
+            "GL Account",
+            "Cost Center",
+            "Fiscal Period",
+            "Amount"
+          ],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Amount": "amount"
+          }
+        },
+        {
+          "role": "budget",
+          "label": "Budget (Excel)",
+          "file": "budget_plan.csv",
+          "required_fields": [
+            "Company Code",
+            "GL Account",
+            "Cost Center",
+            "Fiscal Period",
+            "Budget Amount"
+          ],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Budget Amount": "amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "actuals",
+        "right_role": "budget",
+        "keys": [
+          "company_code",
+          "gl_account",
+          "cost_center",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_variance",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "actuals.amount",
+            "value_2": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "calculate_variance_percentage",
+          "calculator": "calculate_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "numerator": "results.variance",
+            "denominator": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance_percentage"
+          },
+          "depends_on": [
+            "calculate_variance"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        },
+        {
+          "id": "zero_budget_exception",
+          "params": {}
+        }
+      ],
+      "settings": {
+        "materiality": 10000
+      },
+      "routing": {
+        "unmatched": "finance_operations",
+        "high_value": "controller",
+        "high_value_threshold": 100000
+      },
+      "report": {
+        "title": "Budget-vs-Actual Variance Report",
+        "audience": "finance_operations"
+      }
+    },
+    "version": 1,
+    "status": "published",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": "controller_1",
+    "created_at": "2026-08-29T05:11:35.828497+00:00",
+    "published_at": "2026-08-29T05:11:35.856413+00:00",
+    "id": "000002"
+  },
+  {
+    "workflow_id": "wf-0013",
+    "name": "Smoke Agent",
+    "description": "smoke",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "actuals",
+          "file": "budget_actuals.csv",
+          "field_mappings": {
+            "Amount": "amount",
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period"
+          }
+        },
+        {
+          "role": "budget",
+          "file": "budget_plan.csv",
+          "field_mappings": {
+            "Budget Amount": "amount",
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "actuals",
+        "right_role": "budget",
+        "keys": [
+          "company_code",
+          "gl_account",
+          "cost_center",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_variance",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "actuals.Amount",
+            "value_2": "budget.Budget Amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 10000
+      },
+      "routing": {},
+      "report": {
+        "title": "T",
+        "audience": "f"
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T07:42:17.743307+00:00",
+    "published_at": null,
+    "id": "000013"
+  },
+  {
+    "workflow_id": "wf-0005",
+    "name": "Untitled",
+    "description": "Compares actual financial results against approved budget, calculates variances, flags material differences, and provides explanatory reporting by account, entity, cost center, and period.",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ],
+      "sources": [
+        {
+          "role": "actuals",
+          "file": "budget_actuals.csv",
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Amount": "amount"
+          }
+        },
+        {
+          "role": "budget",
+          "file": "budget_plan.csv",
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Budget Amount": "amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "actuals",
+        "right_role": "budget",
+        "keys": [
+          "company_code",
+          "gl_account",
+          "cost_center",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "variance",
+          "calculator": "calculate_variance",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "record",
+          "input_mapping": {
+            "actual": "actuals.amount",
+            "budget": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "variance_pct",
+          "calculator": "calculate_variance_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "record",
+          "input_mapping": {
+            "variance": "results.variance",
+            "budget": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance_pct"
+          },
+          "depends_on": [
+            "variance"
+          ]
+        },
+        {
+          "id": "materiality_flag",
+          "calculator": "calculate_materiality",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "record",
+          "input_mapping": {
+            "variance": "results.variance",
+            "threshold": "settings.materiality"
+          },
+          "output_mapping": {
+            "result": "results.materiality_flag"
+          },
+          "depends_on": [
+            "variance"
+          ]
+        },
+        {
+          "id": "total_actuals",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "dataset",
+          "input_mapping": {
+            "values": "actuals.amount"
+          },
+          "output_mapping": {
+            "result": "results.total_actuals"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "total_budget",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "dataset",
+          "input_mapping": {
+            "values": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.total_budget"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "record_count",
+          "calculator": "calculate_count",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "dataset",
+          "input_mapping": {
+            "values": "actuals.amount"
+          },
+          "output_mapping": {
+            "result": "results.record_count"
+          },
+          "depends_on": []
+        }
+      ],
+      "rules": [
+        {
+          "id": "required_fields_actuals",
+          "name": "required_field",
+          "version": 1,
+          "params": {
+            "fields": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period",
+              "amount"
+            ]
+          }
+        },
+        {
+          "id": "required_fields_budget",
+          "name": "required_field",
+          "version": 1,
+          "params": {
+            "fields": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period",
+              "amount"
+            ]
+          }
+        },
+        {
+          "id": "material_variance_check",
+          "name": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        },
+        {
+          "id": "zero_budget_check",
+          "name": "zero_budget_exception",
+          "version": 1,
+          "params": {
+            "budget_field": "budget.amount",
+            "actual_field": "actuals.amount"
+          }
+        },
+        {
+          "id": "duplicate_check_actuals",
+          "name": "duplicate_check",
+          "version": 1,
+          "params": {
+            "keys": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period"
+            ]
+          }
+        },
+        {
+          "id": "duplicate_check_budget",
+          "name": "duplicate_check",
+          "version": 1,
+          "params": {
+            "keys": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period"
+            ]
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 5000,
+        "tolerance": 1,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "routing": {
+        "materiality_flag": {
+          "true": "A6",
+          "false": "A5"
+        }
+      },
+      "report": {
+        "title": "Budget vs Actuals Variance Analysis",
+        "audience": "Finance Controllers"
+      },
+      "llm_provider": "openrouter",
+      "calculation_policy": {
+        "null_behavior": "create_exception",
+        "blank_behavior": "create_exception",
+        "zero_denominator": "create_exception",
+        "rounding_mode": "half_even",
+        "decimal_places": 2,
+        "currency_mismatch": "stop_pipeline"
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T12:54:34.497082+00:00",
+    "published_at": null,
+    "id": "000005"
+  },
+  {
+    "workflow_id": "wf-0006",
+    "name": "cash flow",
+    "description": "Compare actual financial results with an approved budget and explain material differences by account, entity, cost center, and period.",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "template": "period_comparison",
+      "sources": [
+        {
+          "role": "data",
+          "file": "bank_balance.xlsx",
+          "label": "bank_balance.xlsx",
+          "required_fields": [],
+          "field_mappings": {
+            "Bank Account": "bank_account",
+            "Bank Name": "bank_name",
+            "Company Code": "company_code",
+            "Fiscal Period": "fiscal_period",
+            "Opening Balance": "opening_balance",
+            "Closing Balance": "closing_balance",
+            "Currency": "currency"
+          }
+        },
+        {
+          "role": "budget",
+          "file": "budget_forecast.xlsx",
+          "label": "budget_forecast.xlsx",
+          "required_fields": [],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "Cash Flow Category": "cash_flow_category",
+            "Cash Flow Sub-category": "cash_flow_sub_category",
+            "Fiscal Period": "fiscal_period",
+            "Forecast Amount (LC)": "forecast_amount_lc",
+            "Currency": "currency"
+          }
+        },
+        {
+          "role": "data",
+          "file": "bank_balance.xlsx",
+          "label": "cashflow_category_mapping.xlsx",
+          "required_fields": [],
+          "field_mappings": {
+            "GL Account": "gl_account",
+            "GL Account Name": "gl_account_name",
+            "Cash Flow Category": "cash_flow_category",
+            "Cash Flow Sub-category": "cash_flow_sub_category",
+            "Flow Direction": "flow_direction"
+          }
+        },
+        {
+          "role": "actuals",
+          "file": "sap_gl_export.csv",
+          "label": "sap_gl_export.csv",
+          "required_fields": [],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "GL Account Name": "gl_account_name",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Posting Date": "posting_date",
+            "Document Number": "document_number",
+            "Assignment": "assignment",
+            "Debit/Credit": "debit_credit",
+            "Amount (LC)": "amount_lc",
+            "Currency": "currency"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "actuals",
+        "right_role": "budget",
+        "keys": [
+          "company_code",
+          "gl_account",
+          "cost_center",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_variance",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "actuals.Amount (LC)",
+            "value_2": "budget.Forecast Amount (LC)"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "calculate_variance_percentage",
+          "calculator": "calculate_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "numerator": "results.variance",
+            "denominator": "budget.Forecast Amount (LC)"
+          },
+          "output_mapping": {
+            "result": "results.variance_percentage"
+          },
+          "depends_on": [
+            "calculate_variance"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        },
+        {
+          "id": "zero_budget_exception",
+          "version": 1,
+          "params": {
+            "budget_field": "budget.Forecast Amount (LC)",
+            "actual_field": "actuals.Amount (LC)"
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 5000,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "routing": {
+        "unmatched": "finance_operations",
+        "high_value": "controller",
+        "high_value_threshold": 100000
+      },
+      "report": {
+        "title": "Budget-vs-Actual Variance Report",
+        "audience": "finance_operations"
+      },
+      "llm_provider": "openrouter",
+      "calculation_policy": {
+        "null_behavior": "create_exception",
+        "blank_behavior": "create_exception",
+        "zero_denominator": "create_exception",
+        "rounding_mode": "half_even",
+        "decimal_places": 2,
+        "currency_mismatch": "stop_pipeline"
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T13:25:29.673386+00:00",
+    "published_at": null,
+    "id": "000006"
+  },
+  {
+    "workflow_id": "wf-0007",
+    "name": "Structural Smoke",
+    "description": "d",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "gl_cash_movements",
+          "file": "ledger.csv",
+          "label": "ledger.csv",
+          "required_fields": [],
+          "field_mappings": {
+            "Account": "account",
+            "Period": "period",
+            "Movement Amount": "movement_amount"
+          }
+        },
+        {
+          "role": "forecast",
+          "file": "plan.csv",
+          "label": "plan.csv",
+          "required_fields": [],
+          "field_mappings": {
+            "Account": "account",
+            "Period": "period",
+            "Planned Amount": "planned_amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "gl_cash_movements",
+        "right_role": "forecast",
+        "keys": [
+          "Period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_difference",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "gl_cash_movements.Account",
+            "value_2": "forecast.Account"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "calculate_difference_pct",
+          "calculator": "calculate_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "numerator": "results.variance",
+            "denominator": "forecast.Account"
+          },
+          "output_mapping": {
+            "result": "results.variance_percentage"
+          },
+          "depends_on": [
+            "calculate_difference"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 5000,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "routing": {},
+      "report": {
+        "title": "T",
+        "audience": "f"
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T16:40:53.629153+00:00",
+    "published_at": null,
+    "id": "000007"
+  },
+  {
+    "workflow_id": "wf-0008",
+    "name": "Template Smoke",
+    "description": "d",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "gl",
+          "file": "sap_gl_export.csv",
+          "field_mappings": {}
+        }
+      ],
+      "calculations": [
+        {
+          "id": "s1",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "input_mapping": {
+            "values": "gl.Amount (LC)"
+          },
+          "output_mapping": {
+            "result": "results.total"
+          },
+          "depends_on": []
+        }
+      ],
+      "rules": [],
+      "settings": {},
+      "output_spec": [
+        {
+          "id": "totals",
+          "title": "Category totals",
+          "render": "kpi",
+          "description": "totals"
+        },
+        {
+          "id": "exceptions",
+          "title": "Exceptions",
+          "render": "exceptions",
+          "description": "bad rows"
+        }
+      ]
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T18:08:05.737769+00:00",
+    "published_at": null,
+    "id": "000008"
+  },
+  {
+    "workflow_id": "wf-0009",
+    "name": "Template Smoke",
+    "description": "d",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "gl",
+          "file": "sap_gl_export.csv",
+          "field_mappings": {}
+        }
+      ],
+      "calculations": [
+        {
+          "id": "s1",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "input_mapping": {
+            "values": "gl.Amount (LC)"
+          },
+          "output_mapping": {
+            "result": "results.total"
+          },
+          "depends_on": []
+        }
+      ],
+      "rules": [],
+      "settings": {},
+      "output_spec": [
+        {
+          "id": "totals",
+          "title": "Category totals",
+          "render": "kpi",
+          "description": "totals"
+        },
+        {
+          "id": "exceptions",
+          "title": "Exceptions",
+          "render": "exceptions",
+          "description": "bad rows"
+        }
+      ]
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T18:08:49.373492+00:00",
+    "published_at": null,
+    "id": "000014"
+  },
+  {
+    "workflow_id": "wf-0010",
+    "name": "OS Smoke",
+    "description": "d",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "gl",
+          "file": "ledger.csv",
+          "label": "ledger.csv",
+          "required_fields": [
+            "Amount",
+            "Account",
+            "Period"
+          ],
+          "field_mappings": {
+            "Account": "gl_account",
+            "Period": "fiscal_period",
+            "Amount": "amount"
+          }
+        },
+        {
+          "role": "forecast",
+          "file": "plan.csv",
+          "label": "plan.csv",
+          "required_fields": [
+            "Planned",
+            "Account",
+            "Period"
+          ],
+          "field_mappings": {
+            "Account": "gl_account",
+            "Period": "fiscal_period",
+            "Planned": "amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "gl",
+        "right_role": "forecast",
+        "keys": [
+          "gl_account",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_difference",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "gl.amount",
+            "value_2": "forecast.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "calculate_difference_pct",
+          "calculator": "calculate_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "numerator": "results.variance",
+            "denominator": "forecast.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance_percentage"
+          },
+          "depends_on": [
+            "calculate_difference"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 5000,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "output_spec": [
+        {
+          "id": "variance_table",
+          "title": "Variance per row",
+          "render": "table",
+          "source": "results.variance",
+          "description": "row-level variance"
+        },
+        {
+          "id": "tot",
+          "title": "Variance totals",
+          "render": "kpi",
+          "source": "results.variance",
+          "description": "aggregates"
+        },
+        {
+          "id": "exc",
+          "title": "Exceptions",
+          "render": "exceptions",
+          "description": "unmatched"
+        },
+        {
+          "id": "sumry",
+          "title": "Headline",
+          "render": "kpi",
+          "source": "summary",
+          "description": "headline"
+        },
+        {
+          "id": "rep",
+          "title": "Report",
+          "render": "narrative",
+          "description": "management commentary"
+        }
+      ],
+      "routing": {},
+      "report": {
+        "title": "Gl vs Forecast Report",
+        "audience": "finance_operations",
+        "output_spec": [
+          {
+            "id": "summary_kpis",
+            "title": "Key figures",
+            "render": "kpi",
+            "description": "Headline counts and totals",
+            "source": "summary"
+          },
+          {
+            "id": "compared_table",
+            "title": "Compared rows",
+            "render": "table",
+            "description": "Row-level results per aligned record",
+            "source": "compared_rows"
+          },
+          {
+            "id": "exceptions",
+            "title": "Exceptions",
+            "render": "exceptions",
+            "description": "Rows that failed rules or could not be matched",
+            "source": "exceptions"
+          },
+          {
+            "id": "narrative",
+            "title": "Narrative",
+            "render": "narrative",
+            "description": "Written explanation of the results",
+            "source": "llm"
+          }
+        ]
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T18:26:01.270633+00:00",
+    "published_at": null,
+    "id": "000015"
+  },
+  {
+    "workflow_id": "wf-0011",
+    "name": "OS Real",
+    "description": "d",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A4",
+        "A5"
+      ],
+      "sources": [
+        {
+          "role": "gl",
+          "file": "sap_gl_export.csv",
+          "label": "sap_gl_export.csv",
+          "required_fields": [
+            "Amount (LC)",
+            "Company Code",
+            "Fiscal Period"
+          ],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "Fiscal Period": "fiscal_period",
+            "Amount (LC)": "amount"
+          }
+        },
+        {
+          "role": "forecast",
+          "file": "budget_forecast.xlsx",
+          "label": "budget_forecast.xlsx",
+          "required_fields": [
+            "Forecast Amount (LC)",
+            "Company Code",
+            "Fiscal Period"
+          ],
+          "field_mappings": {
+            "Company Code": "company_code",
+            "Fiscal Period": "fiscal_period",
+            "Forecast Amount (LC)": "amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "gl",
+        "right_role": "forecast",
+        "keys": [
+          "company_code",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "calculate_difference",
+          "calculator": "subtract_values",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "value_1": "gl.amount",
+            "value_2": "forecast.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "calculate_difference_pct",
+          "calculator": "calculate_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "numerator": "results.variance",
+            "denominator": "forecast.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance_percentage"
+          },
+          "depends_on": [
+            "calculate_difference"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "material_variance",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 5000,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "output_spec": [
+        {
+          "id": "variance_table",
+          "title": "Variance per row",
+          "render": "table",
+          "source": "results.variance",
+          "description": "row-level"
+        },
+        {
+          "id": "tot",
+          "title": "Variance totals",
+          "render": "kpi",
+          "source": "results.variance",
+          "description": "aggregates"
+        },
+        {
+          "id": "exc",
+          "title": "Exceptions",
+          "render": "exceptions",
+          "description": "unmatched"
+        },
+        {
+          "id": "rep",
+          "title": "Report",
+          "render": "narrative",
+          "description": "commentary"
+        }
+      ],
+      "routing": {},
+      "report": {
+        "title": "Gl vs Forecast Report",
+        "audience": "finance_operations",
+        "output_spec": [
+          {
+            "id": "summary_kpis",
+            "title": "Key figures",
+            "render": "kpi",
+            "description": "Headline counts and totals",
+            "source": "summary"
+          },
+          {
+            "id": "compared_table",
+            "title": "Compared rows",
+            "render": "table",
+            "description": "Row-level results per aligned record",
+            "source": "compared_rows"
+          },
+          {
+            "id": "exceptions",
+            "title": "Exceptions",
+            "render": "exceptions",
+            "description": "Rows that failed rules or could not be matched",
+            "source": "exceptions"
+          },
+          {
+            "id": "narrative",
+            "title": "Narrative",
+            "render": "narrative",
+            "description": "Written explanation of the results",
+            "source": "llm"
+          }
+        ]
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-29T18:26:29.480684+00:00",
+    "published_at": null,
+    "id": "000016"
+  },
+  {
+    "workflow_id": "wf-0012",
+    "name": "asdfsdf",
+    "description": "Compare actual financial results with approved budget, calculate variances by account, entity, cost center, and period, flag material exceptions, and generate an evidence-backed management report.",
+    "config": {
+      "agents": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ],
+      "sources": [
+        {
+          "role": "actuals",
+          "file": "budget_actuals.csv",
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Amount": "amount"
+          }
+        },
+        {
+          "role": "budget",
+          "file": "budget_plan.csv",
+          "field_mappings": {
+            "Company Code": "company_code",
+            "GL Account": "gl_account",
+            "Cost Center": "cost_center",
+            "Fiscal Period": "fiscal_period",
+            "Budget Amount": "amount"
+          }
+        }
+      ],
+      "comparison": {
+        "left_role": "actuals",
+        "right_role": "budget",
+        "keys": [
+          "company_code",
+          "gl_account",
+          "cost_center",
+          "fiscal_period"
+        ]
+      },
+      "calculations": [
+        {
+          "id": "variance",
+          "calculator": "calculate_variance",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "actual": "actuals.amount",
+            "budget": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "variance_pct",
+          "calculator": "calculate_variance_percentage",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "variance": "results.variance",
+            "budget": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.variance_pct"
+          },
+          "depends_on": [
+            "variance"
+          ]
+        },
+        {
+          "id": "materiality_flag",
+          "calculator": "calculate_materiality",
+          "version": 1,
+          "used_by": "A4",
+          "scope": "row",
+          "input_mapping": {
+            "variance": "results.variance",
+            "threshold": "settings.materiality"
+          },
+          "output_mapping": {
+            "result": "results.is_material"
+          },
+          "depends_on": [
+            "variance"
+          ]
+        },
+        {
+          "id": "total_actuals",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "global",
+          "input_mapping": {
+            "values": "actuals.amount"
+          },
+          "output_mapping": {
+            "result": "results.total_actuals"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "total_budget",
+          "calculator": "calculate_sum",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "global",
+          "input_mapping": {
+            "values": "budget.amount"
+          },
+          "output_mapping": {
+            "result": "results.total_budget"
+          },
+          "depends_on": []
+        },
+        {
+          "id": "total_variance",
+          "calculator": "calculate_variance",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "global",
+          "input_mapping": {
+            "actual": "results.total_actuals",
+            "budget": "results.total_budget"
+          },
+          "output_mapping": {
+            "result": "results.total_variance"
+          },
+          "depends_on": [
+            "total_actuals",
+            "total_budget"
+          ]
+        },
+        {
+          "id": "material_exceptions_count",
+          "calculator": "calculate_count",
+          "version": 1,
+          "used_by": "A5",
+          "scope": "global",
+          "input_mapping": {
+            "values": "results.is_material"
+          },
+          "output_mapping": {
+            "result": "results.material_exceptions_count"
+          },
+          "depends_on": [
+            "materiality_flag"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "required_keys",
+          "version": 1,
+          "params": {
+            "fields": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period"
+            ]
+          }
+        },
+        {
+          "id": "material_variance_check",
+          "version": 3,
+          "params": {
+            "threshold": "settings.materiality",
+            "field": "results.variance"
+          }
+        },
+        {
+          "id": "duplicate_check",
+          "version": 1,
+          "params": {
+            "keys": [
+              "company_code",
+              "gl_account",
+              "cost_center",
+              "fiscal_period"
+            ]
+          }
+        }
+      ],
+      "settings": {
+        "materiality": 3000,
+        "on_track_pct": 5,
+        "review_pct": 10
+      },
+      "output_spec": [
+        {
+          "id": "aligned_records",
+          "title": "Aligned Actual and Budget Records",
+          "render": "table",
+          "description": "Side-by-side actual and budget amounts matched by company, account, cost center, and period with calculated variance and variance percentage",
+          "source": "results"
+        },
+        {
+          "id": "variance_analysis",
+          "title": "Variance and Variance Percentage",
+          "render": "table",
+          "description": "Row-level variance (actual - budget) and variance percentage (variance / budget) for each account-entity-cost center-period combination",
+          "source": "results"
+        },
+        {
+          "id": "material_exceptions",
+          "title": "Materiality Exceptions",
+          "render": "exceptions",
+          "description": "Records where absolute variance exceeds the materiality threshold, flagged for management review",
+          "source": "results"
+        },
+        {
+          "id": "management_report",
+          "title": "Evidence-Backed Management Report",
+          "render": "narrative",
+          "description": "Executive summary with total actuals, total budget, overall variance, count of material exceptions, and top drivers by account and entity",
+          "source": "results"
+        }
+      ],
+      "routing": {
+        "A1": [
+          "actuals",
+          "budget"
+        ],
+        "A2": [
+          "A1"
+        ],
+        "A3": [
+          "A2"
+        ],
+        "A4": [
+          "A3"
+        ],
+        "A5": [
+          "A4"
+        ],
+        "A6": [
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5"
+        ]
+      },
+      "report": {
+        "title": "Budget vs Actuals Variance Analysis Report",
+        "audience": "Finance Management, Controllers, CFO",
+        "output_spec": [
+          {
+            "id": "aligned_records",
+            "title": "Aligned Actual and Budget Records",
+            "render": "table",
+            "description": "Side-by-side actual and budget amounts matched by company, account, cost center, and period with calculated variance and variance percentage",
+            "source": "results"
+          },
+          {
+            "id": "variance_analysis",
+            "title": "Variance and Variance Percentage",
+            "render": "table",
+            "description": "Row-level variance (actual - budget) and variance percentage (variance / budget) for each account-entity-cost center-period combination",
+            "source": "results"
+          },
+          {
+            "id": "material_exceptions",
+            "title": "Materiality Exceptions",
+            "render": "exceptions",
+            "description": "Records where absolute variance exceeds the materiality threshold, flagged for management review",
+            "source": "results"
+          },
+          {
+            "id": "management_report",
+            "title": "Evidence-Backed Management Report",
+            "render": "narrative",
+            "description": "Executive summary with total actuals, total budget, overall variance, count of material exceptions, and top drivers by account and entity",
+            "source": "results"
+          }
+        ]
+      },
+      "llm_provider": "openrouter",
+      "calculation_policy": {
+        "null_behavior": "create_exception",
+        "blank_behavior": "create_exception",
+        "zero_denominator": "create_exception",
+        "rounding_mode": "half_even",
+        "decimal_places": 2,
+        "currency_mismatch": "stop_pipeline"
+      }
+    },
+    "version": 1,
+    "status": "draft",
+    "owner": "admin",
+    "created_by": "admin",
+    "approved_by": null,
+    "created_at": "2026-08-30T11:27:38.734281+00:00",
+    "published_at": null,
+    "id": "000017"
+  }
+]

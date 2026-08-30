@@ -1,0 +1,19 @@
+Company Code,GL Account,Cost Center,Fiscal Period,GL Account Name,Variance,Variance %,Commentary
+1000,400000,CC-10,2026-08,Product Revenue,3571.42,5.4,In line with plan; no significant drivers to report.
+1000,400000,CC-20,2026-08,Product Revenue,1347.03,3.6,In line with plan; no significant drivers to report.
+1000,400000,CC-30,2026-08,Product Revenue,1862.14,9.2,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,410000,CC-10,2026-08,Service Revenue,7404.09,11.7,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,410000,CC-20,2026-08,Service Revenue,4650.72,7.1,In line with plan; no significant drivers to report.
+1000,410000,CC-30,2026-08,Service Revenue,2177.53,8.3,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,500000,CC-10,2026-08,Office Expenses,-3396.29,-4.8,In line with plan; no significant drivers to report.
+1000,500000,CC-20,2026-08,Office Expenses,3079.07,7.3,In line with plan; no significant drivers to report.
+1000,500000,CC-30,2026-08,Office Expenses,10540.49,14.0,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,510000,CC-10,2026-08,Travel Expenses,-1081.17,-2.2,In line with plan; no significant drivers to report.
+1000,510000,CC-20,2026-08,Travel Expenses,8224.07,10.4,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,510000,CC-30,2026-08,Travel Expenses,-2322.05,-6.7,In line with plan; no significant drivers to report.
+1000,520000,CC-10,2026-08,Software Expenses,11363.89,17.8,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,520000,CC-20,2026-08,Software Expenses,1328.17,2.6,In line with plan; no significant drivers to report.
+1000,520000,CC-30,2026-08,Software Expenses,6166.04,n/a,Unbudgeted spend — new initiative approved mid-period; budget amendment pending.
+1000,530000,CC-10,2026-08,Marketing Expenses,9750.32,17.3,Higher activity volume than planned; partially offset by timing shifts expected next period.
+1000,530000,CC-20,2026-08,Marketing Expenses,22860.57,35.0,Vendor price increase plus unplanned license renewals; procurement reviewing contract terms.
+1000,530000,CC-30,2026-08,Marketing Expenses,1724.48,2.7,In line with plan; no significant drivers to report.

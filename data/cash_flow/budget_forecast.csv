@@ -1,0 +1,11 @@
+Company Code,Cash Flow Category,Cash Flow Sub-category,Fiscal Period,Forecast Amount (LC),Currency
+1000,Operating,Net cash from customers & suppliers,2026-07,150000.00,USD
+1000,Operating,Cash paid to employees,2026-07,-81000.00,USD
+1000,Operating,Taxes paid,2026-07,-20000.00,USD
+1000,Investing,Investment deposits / withdrawals,2026-07,25000.00,USD
+1000,Operating,Net cash from customers & suppliers,2026-08,165000.00,USD
+1000,Operating,Cash paid to employees,2026-08,-82500.00,USD
+1000,Operating,Taxes paid,2026-08,-18500.00,USD
+1000,Investing,Purchase of PP&E,2026-08,-40000.00,USD
+1000,Financing,Interest paid on borrowings,2026-08,-6400.00,USD
+1000,Financing,Loan principal repayment,2026-08,-15000.00,USD
