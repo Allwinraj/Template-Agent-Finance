@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, Component } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './CreateAgent.css'
+
 
 const API = 'http://127.0.0.1:8000'
 const DESCRIPTION = ''
@@ -214,7 +215,7 @@ function ThinkingBox({ provider }) {
   )
 }
 
-function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
+function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack, llm }) {
   if (!pipeline && !thinking && !error) return null
 
   const agentInfo = {
@@ -224,6 +225,7 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
     A4: { icon: '✓', name: 'Validate', desc: 'Runs the calculation pipeline per aligned record, applies rules, flags exceptions.' },
     A5: { icon: '✦', name: 'Explain', desc: 'Produces the variance report with evidence links and management commentary.' },
     A6: { icon: '◈', name: 'Coordinate', desc: 'Routes exceptions to review queues, collects human decisions, escalates overdue items.' },
+    A7: { icon: '🔬', name: 'OCR Engine', desc: 'Extracts structured data from scanned invoices and documents (in development).' },
   }
 
   const steps = pipeline?.calculations || pipeline?.calculation_pipeline || []
@@ -234,7 +236,7 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
     <div className="wiz-body anim-fade-up">
       <h2>{thinking ? 'Designing your pipeline…' : error ? 'Pipeline design failed' : 'Pipeline ready — review & tune'}</h2>
 
-      {thinking && <ThinkingBox provider={llm} />}
+      {thinking && <ThinkingBox provider={llm || 'sap_ai_core'} />}
 
       {!thinking && error && (
         <div className="think-box lux-card wiz-error">
@@ -251,7 +253,7 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
       {!thinking && pipeline && (
         <>
           {pipeline.source === 'mock' && (
-            <p className="wiz-hint" style={{ color: '#fbbf24' }}>⚠ Designed from the built-in data-driven template (LLM unavailable or failed). You can tune everything in the next step.</p>
+            <p className="wiz-hint" style={{ color: '#fbbf24' }}>⚠ Designed from the built-in data-driven template. You can tune everything in the next step.</p>
           )}
           <p className="wiz-hint">
             Your LLM analyzed the use case and your data, then designed this agent flow. You'll configure the details on the next page.
@@ -259,7 +261,7 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
           </p>
 
           {(() => {
-            const roles = (pipeline.sources || []).map((s) => s.role).filter(Boolean)
+            const roles = (pipeline.sources || []).map((s) => s?.role).filter(Boolean)
             return roles.length > 0 ? (
               <p className="wiz-hint">Roles assigned by the LLM: {roles.map((r) => <span key={r} className="pipe-model-chip">{r}</span>)}</p>
             ) : null
@@ -273,26 +275,22 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
           )}
 
           <div className="flow-chart">
-            {pipeline.agents?.map((id, i) => (
-              <div key={id} className="flow-row">
-                <div className="flow-node lux-card">
-                  <span className="flow-icon">{agentInfo[id]?.icon}</span>
-                  <div>
-                    <strong>{id} · {agentInfo[id]?.name}</strong>
-                    <p>{agentInfo[id]?.desc}</p>
+            {(pipeline.agents || ['A1', 'A2', 'A4', 'A5']).map((id, i) => {
+              const agent = agentInfo[id] || { icon: '🤖', name: id, desc: 'Specialized agent in the workflow chain.' }
+              return (
+                <div key={id || i} className="flow-row">
+                  <div className="flow-node lux-card">
+                    <span className="flow-icon">{agent.icon}</span>
+                    <div>
+                      <strong>{id} · {agent.name}</strong>
+                      <p>{agent.desc}</p>
+                    </div>
                   </div>
+                  {i < (pipeline.agents?.length || 0) - 1 && <div className="flow-arrow">→</div>}
                 </div>
-                {i < (pipeline.agents?.length || 0) - 1 && <div className="flow-arrow">→</div>}
-              </div>
-            ))}
+              )
+            })}
           </div>
-
-          {explanation && (
-            <div className="pipe-explain lux-card anim-fade-up">
-              <div className="pipe-explain-head"><span className="flow-icon">✦</span><strong>Why this pipeline</strong></div>
-              <p>{explanation}</p>
-            </div>
-          )}
 
           <p className="wiz-hint" style={{ marginTop: 14 }}>→ Continue to Configure Agents to change engines, parameters and mappings.</p>
         </>
@@ -300,7 +298,7 @@ function StepPipeline({ pipeline, thinking, error, onRetry, onNext, onBack }) {
 
       <div className="wiz-actions">
         <button className="btn btn-ghost" onClick={onBack}>← Back</button>
-        <button className="btn btn-gold" disabled={!pipeline} onClick={onNext}>Continue → Configure Agents</button>
+        <button className="btn btn-gold" disabled={!pipeline || thinking} onClick={onNext}>Continue → Configure Agents</button>
       </div>
     </div>
   )
@@ -1028,18 +1026,47 @@ function StepCreate({ pipeline, configs, profiles, agentName, onCreated, onBack 
 }
 
 /* ================================================================
-   Wizard
+   Wizard Error Boundary & Container
    ================================================================ */
+class WizardErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[CreateAgent] Uncaught render error in wizard:', error, errorInfo)
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="think-box lux-card wiz-error" style={{ margin: '2rem auto', maxWidth: 800 }}>
+          <h2>Something went wrong loading this step</h2>
+          <p className="wiz-hint">Error: {String(this.state.error?.message || this.state.error)}</p>
+          <div className="wiz-actions">
+            <button className="btn btn-gold" onClick={() => { this.setState({ hasError: false }); window.location.reload() }}>
+              ↻ Reload Wizard
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export default function CreateAgent() {
   const [step, setStep] = useState(0)
   const [description, setDescription] = useState(DESCRIPTION)
   const [agentName, setAgentName] = useState('')
-  const [llm, setLlm] = useState('openrouter')
+  const [llm, setLlm] = useState('sap_ai_core')
   const [profiles, setProfiles] = useState([])
   const [pipeline, setPipeline] = useState(null)
   const [thinking, setThinking] = useState(false)
   const [pipelineError, setPipelineError] = useState('')
-  const [configs, setConfigs] = useState({ materiality: 10000, llm: 'openrouter' })
+  const [configs, setConfigs] = useState({ materiality: 10000, llm: 'sap_ai_core' })
   const [created, setCreated] = useState(null)
   const [calculators, setCalculators] = useState([])
   const [rules, setRules] = useState([])
@@ -1086,17 +1113,24 @@ export default function CreateAgent() {
   }
 
   return (
-    <div className="page">
-      <header className="page-head"><div><h1>Create Agent</h1><p>Describe → add data → AI designs pipeline → configure → create.</p></div>
-        {created && <span className="chip"><span className="status-dot ok" /> {created.workflow_id} created</span>}</header>
-      <Stepper current={step} />
-      <div className="lux-card wiz-card">
-        {step === 0 && <StepDescribe description={description} setDescription={setDescription} llm={llm} setLlm={setLlm} agentName={agentName} setAgentName={setAgentName} onNext={() => { setConfigs((c) => ({ ...c, llm })); setStep(1) }} />}
-        {step === 1 && <StepData profiles={profiles} setProfiles={setProfiles} description={description} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-        {step === 2 && <StepPipeline pipeline={pipeline} thinking={thinking} error={pipelineError} onRetry={retryPipeline} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-        {step === 3 && <StepConfigure pipeline={pipeline} configs={configs} setConfigs={setConfigs} calculators={calculators} rules={rules} profiles={profiles} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
-        {step === 4 && <StepCreate pipeline={pipeline} configs={configs} profiles={profiles} agentName={agentName} onCreated={setCreated} onBack={() => setStep(3)} />}
+    <WizardErrorBoundary>
+      <div className="page">
+        <header className="page-head">
+          <div>
+            <h1>Create Agent</h1>
+            <p>Describe → add data → AI designs pipeline → configure → create.</p>
+          </div>
+          {created && <span className="chip"><span className="status-dot ok" /> {created.workflow_id} created</span>}
+        </header>
+        <Stepper current={step} />
+        <div className="lux-card wiz-card">
+          {step === 0 && <StepDescribe description={description} setDescription={setDescription} llm={llm} setLlm={setLlm} agentName={agentName} setAgentName={setAgentName} onNext={() => { setConfigs((c) => ({ ...c, llm })); setStep(1) }} />}
+          {step === 1 && <StepData profiles={profiles} setProfiles={setProfiles} description={description} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+          {step === 2 && <StepPipeline pipeline={pipeline} thinking={thinking} error={pipelineError} llm={llm} onRetry={retryPipeline} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
+          {step === 3 && <StepConfigure pipeline={pipeline} configs={configs} setConfigs={setConfigs} calculators={calculators} rules={rules} profiles={profiles} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
+          {step === 4 && <StepCreate pipeline={pipeline} configs={configs} profiles={profiles} agentName={agentName} onCreated={setCreated} onBack={() => setStep(3)} />}
+        </div>
       </div>
-    </div>
+    </WizardErrorBoundary>
   )
 }
