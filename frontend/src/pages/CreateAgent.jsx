@@ -42,7 +42,8 @@ function Tooltip({ children, title, meta, body }) {
 function StepDescribe({ description, setDescription, llm, setLlm, agentName, setAgentName, onNext }) {
   const providers = [
     { id: 'openrouter', name: 'OpenRouter', model: 'liquid/lfm-2.5-2.6b:free', desc: 'Fastest · primary model with auto-fallback' },
-    { id: 'sap_ai_core', name: 'SAP AI Core', model: 'gpt-4o-mini', desc: 'Enterprise · SAP AI Core deployment' },
+    { id: 'sap_ai_core', name: 'SAP AI Core', model: 'gpt-4.1', desc: 'Enterprise · SAP AI Core (GPT-4.1)' },
+
   ]
   return (
     <div className="wiz-body anim-fade-up">
@@ -363,7 +364,7 @@ function StepConfigure({ pipeline, configs, setConfigs, calculators, rules, prof
 
   // A5 report template — pre-filled by the LLM from the 'Output:' bullets,
   // editable here so the user controls the final report layout.
-  const outputSpec = configs.output_spec || pipeline.output_spec || []
+  const outputSpec = configs.output_spec || pipeline?.output_spec || []
   const updateBlock = (idx, field, value) => {
     const next = [...outputSpec]
     next[idx] = { ...next[idx], [field]: value }
@@ -372,7 +373,7 @@ function StepConfigure({ pipeline, configs, setConfigs, calculators, rules, prof
   const removeBlock = (idx) => setConfigs({ ...configs, output_spec: outputSpec.filter((_, x) => x !== idx) })
   const addBlock = () => setConfigs({ ...configs, output_spec: [...outputSpec, { id: `output_${outputSpec.length + 1}`, title: '', render: 'table', description: '' }] })
 
-  const calcs = configs.calculations || pipeline.calculations || pipeline.calculation_pipeline || []
+  const calcs = configs.calculations || pipeline?.calculations || pipeline?.calculation_pipeline || []
   const rls = configs.rules || pipeline.rules || []
 
   const setCalcs = (next) => setConfigs({ ...configs, calculations: next })
@@ -1054,18 +1055,18 @@ export default function CreateAgent() {
     startedRef.current = true
     setThinking(true)
     setPipelineError('')
-    console.log('[wizard] step 2 → POST /llm/design-pipeline (profiles:', profiles.length, ')')
+    console.log('[wizard] step 2 → POST /llm/design-pipeline (profiles:', profiles.length, ', provider:', llm, ')')
     ;(async () => {
       try {
         const res = await fetch(`${API}/llm/design-pipeline`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description, profiles, llm }),
+          body: JSON.stringify({ description, profiles, llm_provider: llm }),
         })
         if (!res.ok) throw new Error(`Backend returned ${res.status}`)
         const data = await res.json()
         if (data.error) throw new Error(data.error)
-        console.log('[wizard] pipeline received:', data?.title, data?.agents, '| source:', data?.source)
+        console.log('[wizard] pipeline received:', data?.title, data?.agents, '| source:', data?.source, '| provider:', llm)
         setPipeline(data)
       } catch (err) {
         console.error('[wizard] pipeline generation failed:', err)
@@ -1074,7 +1075,8 @@ export default function CreateAgent() {
         setThinking(false)
       }
     })()
-  }, [step, pipeline, description, profiles])
+  }, [step, pipeline, description, profiles, llm])
+
 
   const retryPipeline = () => {
     startedRef.current = false
