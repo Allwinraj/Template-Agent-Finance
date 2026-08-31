@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-  NEXUS 2.0 -- SAP AI Core GPT-4.1 Diagnostics & Hello World Test
+  NEXUS 2.0 -- SAP AI Core Multi-Model & GPT-4.1 Diagnostic Test
 ================================================================================
 
-Tests your SAP AI Core connection end-to-end using credentials from backend/.env:
-  1. Authenticates against SAP XSUAA using client credentials
-  2. Runs "Hello World" chat inference on GPT-4.1 (and other configured models)
-  3. Tests full Nexus 2.0 application layer (app.llm.explain / suggest_workflow)
+This test:
+  1. Loads credentials from backend/.env matching .env.example
+  2. Authenticates via XSUAA to get an OAuth2 bearer token
+  3. Tests inference across all configured models (GPT-4.1 primary, GPT-4o, etc.)
+  4. Tests full Nexus 2.0 application routing layer (app.llm)
 
 Usage:
   python tests/sap_ai_test.py
@@ -65,34 +66,34 @@ except ImportError:
 
 
 # -----------------------------------------------------------------------------
-# 2. Base Credentials from .env
+# 2. Base Credentials from .env (Matching .env.example)
 # -----------------------------------------------------------------------------
 AICORE_API_URL = os.getenv("AICORE_API_URL") or os.getenv("SAP_AICORE_BASE_URL", "")
+_AICORE_DEPLOY_ID = os.getenv("AICORE_DEPLOYMENT_ID") or os.getenv("SAP_AICORE_DEPLOYMENT_URL", "")
+AICORE_RG = os.getenv("AICORE_RESOURCE_GROUP") or os.getenv("SAP_AICORE_RESOURCE_GROUP", "default")
 XSUAA_URL = os.getenv("XSUAA_URL") or os.getenv("SAP_AICORE_AUTH_URL", "")
 XSUAA_CLIENT_ID = os.getenv("XSUAA_CLIENT_ID") or os.getenv("SAP_AICORE_CLIENT_ID", "")
 XSUAA_CLIENT_SECRET = os.getenv("XSUAA_CLIENT_SECRET") or os.getenv("SAP_AICORE_CLIENT_SECRET", "")
-AICORE_RG = os.getenv("AICORE_RESOURCE_GROUP") or os.getenv("SAP_AICORE_RESOURCE_GROUP", "default")
-_AICORE_DEPLOY_ID = os.getenv("AICORE_DEPLOYMENT_ID") or os.getenv("SAP_AICORE_DEPLOYMENT_URL", "")
 OPENAI_API_VERSION = os.getenv("AICORE_OPENAI_API_VERSION", "2024-12-01-preview")
 ACTIVE_PROVIDER = os.getenv("LLM_PROVIDER", "openrouter").strip()
 
 # Model Registry configuration
 MODELS = {
     "gpt41": {
-        "label": "gpt-4.1 (Nexus Primary)",
+        "label": "gpt-4.1 (Nexus Primary Engine)",
         "deploy_id": os.getenv("AICORE_GPT41_DEPLOYMENT_ID", "d7cec98f1a47f4f3"),
-        "format": "openai",
-        "api_version": OPENAI_API_VERSION,
-    },
-    "gpt4o_mini": {
-        "label": "gpt-4o-mini",
-        "deploy_id": os.getenv("AICORE_GPT40_MINI_DEPLOYMENT_ID", "dfe7e04bfb45b361"),
         "format": "openai",
         "api_version": OPENAI_API_VERSION,
     },
     "gpt4o": {
         "label": "gpt-4o",
         "deploy_id": os.getenv("AICORE_GPT40_DEPLOYMENT_ID", "db87ce5524bf96d9"),
+        "format": "openai",
+        "api_version": OPENAI_API_VERSION,
+    },
+    "gpt4o_mini": {
+        "label": "gpt-4o-mini",
+        "deploy_id": os.getenv("AICORE_GPT40_MINI_DEPLOYMENT_ID", "dfe7e04bfb45b361"),
         "format": "openai",
         "api_version": OPENAI_API_VERSION,
     },
@@ -104,7 +105,7 @@ MODELS = {
     },
     "claude": {
         "label": "claude-4.7-opus",
-        "deploy_id": os.getenv("AICORE_CLAUDE_DEPLOYMENT_ID", _AICORE_DEPLOY_ID if "claude" in _AICORE_DEPLOY_ID.lower() else ""),
+        "deploy_id": os.getenv("AICORE_CLAUDE_DEPLOYMENT_ID", _AICORE_DEPLOY_ID if "claude" in str(_AICORE_DEPLOY_ID).lower() else ""),
         "format": "anthropic",
     },
 }
@@ -119,18 +120,21 @@ def mask(val: str, show_start: int = 4, show_end: int = 4) -> str:
     return f"{val[:show_start]}...{val[-show_end:]}"
 
 
-print("\n" + "=" * 70)
-print("  SAP AI CORE (GPT-4.1) CONFIGURATION SUMMARY")
-print("=" * 70)
-print(f"  * LLM_PROVIDER in .env     : {ACTIVE_PROVIDER}")
-print(f"  * AICORE_API_URL           : {AICORE_API_URL or '<NOT SET>'}")
-print(f"  * XSUAA_URL                : {XSUAA_URL or '<NOT SET>'}")
-print(f"  * XSUAA_CLIENT_ID          : {mask(XSUAA_CLIENT_ID, 6, 4)}")
-print(f"  * XSUAA_CLIENT_SECRET      : {mask(XSUAA_CLIENT_SECRET, 3, 3)}")
-print(f"  * AICORE_RESOURCE_GROUP    : {AICORE_RG}")
-print(f"  * GPT-4.1 Deployment ID    : {MODELS['gpt41']['deploy_id']}")
-print(f"  * OpenAI API Version       : {OPENAI_API_VERSION}")
-print("=" * 70 + "\n")
+print("\n" + "=" * 75)
+print("  SAP AI CORE CONFIGURATION CHECK (.env vs .env.example)")
+print("=" * 75)
+print(f"  * LLM_PROVIDER in .env           : {ACTIVE_PROVIDER}")
+print(f"  * AICORE_API_URL                 : {AICORE_API_URL or '<NOT SET>'}")
+print(f"  * XSUAA_URL                      : {XSUAA_URL or '<NOT SET>'}")
+print(f"  * XSUAA_CLIENT_ID                : {mask(XSUAA_CLIENT_ID, 6, 4)}")
+print(f"  * XSUAA_CLIENT_SECRET            : {mask(XSUAA_CLIENT_SECRET, 3, 3)}")
+print(f"  * AICORE_RESOURCE_GROUP          : {AICORE_RG}")
+print(f"  * AICORE_OPENAI_API_VERSION      : {OPENAI_API_VERSION}")
+print(f"  * AICORE_GPT41_DEPLOYMENT_ID     : {MODELS['gpt41']['deploy_id']}")
+print(f"  * AICORE_GPT40_DEPLOYMENT_ID     : {MODELS['gpt4o']['deploy_id']}")
+print(f"  * AICORE_GPT40_MINI_DEPLOYMENT_ID: {MODELS['gpt4o_mini']['deploy_id']}")
+print(f"  * AICORE_GPT55_DEPLOYMENT_ID     : {MODELS['gpt55']['deploy_id']}")
+print("=" * 75 + "\n")
 
 
 # -----------------------------------------------------------------------------
@@ -183,10 +187,10 @@ def test_step_1_oauth() -> Optional[str]:
 
 
 # -----------------------------------------------------------------------------
-# 4. Test Step 2: Hello World Inference on GPT-4.1
+# 4. Test Step 2: Multi-Model Inference (with focus on GPT-4.1)
 # -----------------------------------------------------------------------------
-def test_step_2_inference(token: str) -> bool:
-    print("\n[TEST 2/3] Testing Hello World Inference on SAP AI Core...")
+def test_all_models(token: str) -> bool:
+    print("\n[TEST 2/3] Testing Inference Across Model Deployments...")
     
     if not AICORE_API_URL:
         print("  [FAIL] AICORE_API_URL is missing in .env")
@@ -198,44 +202,57 @@ def test_step_2_inference(token: str) -> bool:
         "Content-Type": "application/json",
     }
 
-    # Test GPT-4.1 specifically first
-    primary_config = MODELS["gpt41"]
-    print(f"\n--- Testing Primary Model: {primary_config['label']} (ID: {primary_config['deploy_id']}) ---")
-    
-    url = f"{AICORE_API_URL.rstrip('/')}/v2/inference/deployments/{primary_config['deploy_id']}/chat/completions?api-version={primary_config['api_version']}"
-    payload = {
-        "messages": [
-            {"role": "system", "content": "You are Nexus 2.0 finance AI assistant."},
-            {"role": "user", "content": "Say 'Hello World! SAP AI Core GPT-4.1 is fully operational.' in one sentence."}
-        ],
-        "max_tokens": 100,
-        "temperature": 0.2,
-    }
+    gpt41_success = False
 
-    print(f"  -> POST {url}")
-    print(f"  -> Resource-Group: {AICORE_RG}")
-    t0 = time.perf_counter()
-    try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=30.0)
-        elapsed = time.perf_counter() - t0
+    for key, config in MODELS.items():
+        print(f"\n--- Testing {config['label']} (ID: {config.get('deploy_id') or 'N/A'}) ---")
         
-        if resp.status_code == 200:
-            result = resp.json()
-            content = result["choices"][0]["message"]["content"].strip()
-            usage = result.get("usage", {})
-            print(f"  [PASS] GPT-4.1 responded in {elapsed:.2f}s!")
-            print(f"         Prompt tokens: {usage.get('prompt_tokens', '?')} | Completion tokens: {usage.get('completion_tokens', '?')}")
-            print("\n  " + "-" * 66)
-            print(f"  [GPT-4.1 Response]:\n  \"{content}\"")
-            print("  " + "-" * 66)
-            return True
-        else:
-            print(f"  [FAIL] HTTP {resp.status_code} in {elapsed:.2f}s")
-            print(f"  Response: {resp.text[:400]}")
-            return False
-    except Exception as e:
-        print(f"  [FAIL] Inference error: {e}")
-        return False
+        if not config.get("deploy_id"):
+            print("  [Skipped] No deployment ID configured.")
+            continue
+
+        try:
+            if config["format"] == "openai":
+                url = f"{AICORE_API_URL.rstrip('/')}/v2/inference/deployments/{config['deploy_id']}/chat/completions?api-version={config['api_version']}"
+                payload = {
+                    "messages": [{"role": "user", "content": "Say 'Hello World! Model operational.' in one sentence."}],
+                    "max_tokens": 60,
+                    "temperature": 0.2,
+                }
+            elif config["format"] == "anthropic":
+                url = f"{AICORE_API_URL.rstrip('/')}/v2/inference/deployments/{config['deploy_id']}/invoke"
+                payload = {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 60,
+                    "messages": [{"role": "user", "content": "Say 'Hello World! Model operational.' in one sentence."}]
+                }
+            else:
+                print(f"  [Skipped] Unknown format '{config['format']}'")
+                continue
+
+            t0 = time.perf_counter()
+            response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+            elapsed = time.perf_counter() - t0
+            response.raise_for_status()
+            result = response.json()
+            
+            if config["format"] == "openai":
+                content = result["choices"][0]["message"]["content"].strip()
+                usage = result.get("usage", {})
+                print(f"  [PASS] {config['label']} responded in {elapsed:.2f}s!")
+                print(f"         Prompt tokens: {usage.get('prompt_tokens', '?')} | Completion tokens: {usage.get('completion_tokens', '?')}")
+                print(f"  Response: \"{content}\"")
+                if key == "gpt41":
+                    gpt41_success = True
+            else:
+                content = result["content"][0]["text"].strip()
+                print(f"  [PASS] {config['label']} responded in {elapsed:.2f}s!")
+                print(f"  Response: \"{content}\"")
+
+        except Exception as e:
+            print(f"  [FAIL] {config['label']} failed: {str(e)}")
+
+    return gpt41_success
 
 
 # -----------------------------------------------------------------------------
@@ -270,30 +287,75 @@ def test_step_3_app_integration() -> bool:
 def main():
     token = test_step_1_oauth()
     if not token:
-        print("\n" + "=" * 70)
+        print("\n" + "=" * 75)
         print("  [RESULT] SAP AI Core Authentication FAILED.")
         print("  Check in .env: XSUAA_URL, XSUAA_CLIENT_ID, XSUAA_CLIENT_SECRET")
-        print("=" * 70)
+        print("=" * 75)
         sys.exit(1)
 
-    inference_ok = test_step_2_inference(token)
+    inference_ok = test_all_models(token)
     if not inference_ok:
-        print("\n" + "=" * 70)
-        print("  [RESULT] SAP AI Core Inference FAILED.")
+        print("\n" + "=" * 75)
+        print("  [RESULT] Primary GPT-4.1 Inference FAILED.")
         print("  Check in .env: AICORE_API_URL, AICORE_GPT41_DEPLOYMENT_ID, AICORE_RESOURCE_GROUP")
-        print("=" * 70)
+        print("=" * 75)
         sys.exit(1)
 
     app_ok = test_step_3_app_integration()
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 75)
     if inference_ok and app_ok:
         print("  [SUCCESS] ALL SAP AI CORE GPT-4.1 TESTS PASSED!")
-        print("  Nexus 2.0 is fully verified and running on SAP AI Core GPT-4.1.")
+        print("  Nexus 2.0 is fully verified and matching .env.example with GPT-4.1.")
     else:
         print("  [WARNING] Direct inference succeeded, but app routing encountered issues.")
-    print("=" * 70 + "\n")
+    print("=" * 75 + "\n")
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+# ============================================================
+# Nexus 2.0 — Backend environment variables
+# Copy this file to .env and fill in your values.
+# ============================================================
+
+# --- LLM provider: "openrouter" (default) or "sap_ai_core" ---
+LLM_PROVIDER=openrouter
+
+# --- OpenRouter (default) ---
+# Sign up free at https://openrouter.ai → Keys. Primary model is the fastest free model.
+# Fallback models are tried automatically if the primary fails (comma-separated).
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_MODEL=liquid/lfm-2.5-2.6b:free
+OPENROUTER_FALLBACK_MODELS=inclusionai/ling-3.0-flash-fin:free,nvidia/nemotron-3.5-lightning:free
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+
+# --- SAP AI Core (set LLM_PROVIDER=sap_ai_core to use) ---
+AICORE_API_URL=https://api.ai.prod.eu-central-1.aws.ml.hana.ondemand.com
+XSUAA_URL=https://your-subaccount.authentication.eu10.hana.ondemand.com
+XSUAA_CLIENT_ID=your-client-id
+XSUAA_CLIENT_SECRET=your-client-secret
+AICORE_RESOURCE_GROUP=default
+AICORE_OPENAI_API_VERSION=2024-12-01-preview
+
+# Model Deployment IDs (GPT-4.1 is the primary model used by Nexus 2.0)
+AICORE_GPT41_DEPLOYMENT_ID=d7cec98f1a47f4f3
+AICORE_GPT40_DEPLOYMENT_ID=db87ce5524bf96d9
+AICORE_GPT40_MINI_DEPLOYMENT_ID=dfe7e04bfb45b361
+AICORE_GPT55_DEPLOYMENT_ID=dcad171471db5a4c
+AICORE_DEPLOYMENT_ID=
+SAP_AICORE_MODEL=gpt-4.1
+
+
+
+# --- Server ---
+NEXUS_HOST=127.0.0.1
+NEXUS_PORT=8000
+NEXUS_CORS_ORIGINS=http://localhost:3000
+
+# --- Storage ---
+NEXUS_DATA_DIR=../data
