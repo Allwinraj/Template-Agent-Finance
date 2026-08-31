@@ -1,9 +1,9 @@
 """
-SAP AI Core LLM client.
+SAP AI Core LLM client (GPT-4.1 default).
 
-Uses the Generative AI Hub (OpenAI-compatible chat completions) through a
-SAP AI Core deployment. When credentials are missing in .env, falls back to
-deterministic mock responses so the whole platform works offline.
+Uses SAP AI Core Generative AI Hub deployments with XSUAA OAuth2 tokens.
+When credentials are missing in .env, falls back to deterministic mock
+responses so the whole platform works offline.
 """
 from __future__ import annotations
 
@@ -14,12 +14,14 @@ import time
 import requests
 
 from app.config import (
-    SAP_AICORE_AUTH_URL,
-    SAP_AICORE_CLIENT_ID,
-    SAP_AICORE_CLIENT_SECRET,
-    SAP_AICORE_DEPLOYMENT_URL,
+    AICORE_API_URL,
+    XSUAA_URL,
+    XSUAA_CLIENT_ID,
+    XSUAA_CLIENT_SECRET,
+    AICORE_RESOURCE_GROUP,
+    AICORE_GPT41_DEPLOYMENT_ID,
+    AICORE_OPENAI_API_VERSION,
     SAP_AICORE_MODEL,
-    SAP_AICORE_RESOURCE_GROUP,
     aicore_configured,
 )
 
@@ -27,7 +29,7 @@ logger = logging.getLogger("nexus.llm.sap_ai_core")
 
 _token_cache: dict = {"token": None, "expires": 0}
 
-_last_model_used: str | None = None
+_last_model_used: str = "gpt-4.1"
 
 SYSTEM_WORKFLOW = (
     "OUTPUT RULE: JSON ONLY. No markdown, no code fences, no preamble, no explanation, no thinking process. "
@@ -71,14 +73,20 @@ def _get_token() -> str:
     if _token_cache["token"] and now < _token_cache["expires"]:
         return _token_cache["token"]
 
+    auth_url = XSUAA_URL.rstrip('/')
+    if not auth_url.endswith("/oauth/token"):
+        auth_url = f"{auth_url}/oauth/token"
+
+    logger.info("[llm] fetching SAP XSUAA OAuth token from %s...", auth_url)
     resp = requests.post(
-        SAP_AICORE_AUTH_URL,
+        auth_url,
         data={
             "grant_type": "client_credentials",
-            "client_id": SAP_AICORE_CLIENT_ID,
-            "client_secret": SAP_AICORE_CLIENT_SECRET,
+            "client_id": XSUAA_CLIENT_ID,
+            "client_secret": XSUAA_CLIENT_SECRET,
         },
-        timeout=30,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=15.0,
     )
     resp.raise_for_status()
     data = resp.json()
@@ -87,40 +95,50 @@ def _get_token() -> str:
     return _token_cache["token"]
 
 
-def _chat_remote(messages: list, temperature: float) -> str:
-    """OpenAI-compatible chat completion through the AI Core deployment."""
+def _chat_remote(messages: list, temperature: float = 0.2) -> str:
+    """OpenAI-compatible chat completion through the SAP AI Core GPT-4.1 deployment."""
     token = _get_token()
-    url = f"{SAP_AICORE_DEPLOYMENT_URL.rstrip('/')}/chat/completions"
+    api_url = AICORE_API_URL.rstrip('/')
+    deploy_id = AICORE_GPT41_DEPLOYMENT_ID
+    api_version = AICORE_OPENAI_API_VERSION
+
+    url = f"{api_url}/v2/inference/deployments/{deploy_id}/chat/completions?api-version={api_version}"
+
     headers = {
         "Authorization": f"Bearer {token}",
-        "AI-Resource-Group": SAP_AICORE_RESOURCE_GROUP,
+        "AI-Resource-Group": AICORE_RESOURCE_GROUP,
         "Content-Type": "application/json",
     }
     payload = {
-        "model": SAP_AICORE_MODEL,
         "messages": messages,
         "temperature": temperature,
         "max_tokens": 3000,
     }
-    r = requests.post(url, json=payload, headers=headers, timeout=60)
+
+    logger.info("[llm] calling SAP AI Core GPT-4.1 (deploy_id=%s, api_version=%s)...", deploy_id, api_version)
+    t0 = time.perf_counter()
+    r = requests.post(url, json=payload, headers=headers, timeout=60.0)
     r.raise_for_status()
     data = r.json()
     global _last_model_used
-    _last_model_used = SAP_AICORE_MODEL
+    _last_model_used = "gpt-4.1"
+    logger.info("[llm] SAP AI Core GPT-4.1 responded OK in %.1fs", time.perf_counter() - t0)
     return data["choices"][0]["message"]["content"]
 
 
 def chat(messages: list, temperature: float = 0.2) -> str:
     """
-    Chat completion via SAP AI Core (OpenAI-compatible).
+    Chat completion via SAP AI Core GPT-4.1.
     Falls back to mock_chat() when credentials are not configured or on error.
     """
     if aicore_configured():
         try:
             return _chat_remote(messages, temperature)
         except Exception as exc:  # noqa: BLE001 — degrade gracefully
-            print(f"[llm] SAP AI Core call failed, using mock fallback: {exc}")
+            logger.warning("[llm] SAP AI Core GPT-4.1 call failed, using mock fallback: %s", exc)
     return mock_chat(messages)
+
+
 
 
 def mock_chat(messages: list) -> str:
@@ -394,10 +412,12 @@ def suggest_workflow(description: str, file_profiles: list, engine_library: dict
     uploaded file profiles, and the engine library (calculators + rules).
     Falls back to the data-driven deterministic template when not configured or on error.
     """
+    from app.llm.openrouter import _mock_workflow, _normalize_config as _or_normalize
+
     library = engine_library or {}
     if not aicore_configured():
         logger.warning("[llm] SAP_AICORE credentials not configured → using data-driven MOCK fallback workflow")
-        return _normalize_config(mock_chat([{"role": "user", "content": "suggest workflow"}]), file_profiles)
+        return _or_normalize(_mock_workflow(file_profiles, library), file_profiles)
 
     system_prompt = SYSTEM_WORKFLOW
     if library:
@@ -465,10 +485,11 @@ def suggest_workflow(description: str, file_profiles: list, engine_library: dict
         except Exception as exc:  # noqa: BLE001 — degrade gracefully
             logger.error("[llm] SAP AI Core suggest_workflow FAILED after %.1fs (%s) → using data-driven mock fallback",
                          time.perf_counter() - t0, exc)
-            return _normalize_config(mock_chat([{"role": "user", "content": "suggest workflow"}]), file_profiles)
+            return _or_normalize(_mock_workflow(file_profiles, library), file_profiles)
 
     logger.error("[llm] SAP AI Core reply invalid JSON after %d attempts (%s) → falling back to data-driven mock template", 3, last_error)
-    return _normalize_config(mock_chat([{"role": "user", "content": "suggest workflow"}]), file_profiles)
+    return _or_normalize(_mock_workflow(file_profiles, library), file_profiles)
+
 
 
 def explain(prompt: str) -> str:

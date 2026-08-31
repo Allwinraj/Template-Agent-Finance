@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 ================================================================================
   NEXUS 2.0 -- SAP AI Core Multi-Model & GPT-4.1 Diagnostic Test
@@ -314,48 +314,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-# ============================================================
-# Nexus 2.0 — Backend environment variables
-# Copy this file to .env and fill in your values.
-# ============================================================
-
-# --- LLM provider: "openrouter" (default) or "sap_ai_core" ---
-LLM_PROVIDER=openrouter
-
-# --- OpenRouter (default) ---
-# Sign up free at https://openrouter.ai → Keys. Primary model is the fastest free model.
-# Fallback models are tried automatically if the primary fails (comma-separated).
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
-OPENROUTER_MODEL=liquid/lfm-2.5-2.6b:free
-OPENROUTER_FALLBACK_MODELS=inclusionai/ling-3.0-flash-fin:free,nvidia/nemotron-3.5-lightning:free
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-
-# --- SAP AI Core (set LLM_PROVIDER=sap_ai_core to use) ---
-AICORE_API_URL=https://api.ai.prod.eu-central-1.aws.ml.hana.ondemand.com
-XSUAA_URL=https://your-subaccount.authentication.eu10.hana.ondemand.com
-XSUAA_CLIENT_ID=your-client-id
-XSUAA_CLIENT_SECRET=your-client-secret
-AICORE_RESOURCE_GROUP=default
-AICORE_OPENAI_API_VERSION=2024-12-01-preview
-
-# Model Deployment IDs (GPT-4.1 is the primary model used by Nexus 2.0)
-AICORE_GPT41_DEPLOYMENT_ID=d7cec98f1a47f4f3
-AICORE_GPT40_DEPLOYMENT_ID=db87ce5524bf96d9
-AICORE_GPT40_MINI_DEPLOYMENT_ID=dfe7e04bfb45b361
-AICORE_GPT55_DEPLOYMENT_ID=dcad171471db5a4c
-AICORE_DEPLOYMENT_ID=
-SAP_AICORE_MODEL=gpt-4.1
-
-
-
-# --- Server ---
-NEXUS_HOST=127.0.0.1
-NEXUS_PORT=8000
-NEXUS_CORS_ORIGINS=http://localhost:3000
-
-# --- Storage ---
-NEXUS_DATA_DIR=../data

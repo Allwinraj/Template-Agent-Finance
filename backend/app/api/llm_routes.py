@@ -13,7 +13,7 @@ import pandas as pd
 from fastapi import APIRouter, File, Form, UploadFile
 from pydantic import BaseModel
 
-from app.config import UPLOADS_DIR
+from app.config import UPLOADS_DIR, llm_provider as get_llm_provider, openrouter_configured, aicore_configured
 from app.engines.calculation_engine import CALCULATORS
 from app.engines.rule_engine import RULES
 from app.llm import explain as llm_explain, suggest_workflow as llm_suggest_workflow
@@ -29,8 +29,26 @@ DESCRIPTION = (
 )
 
 
+@router.get("/status")
+def llm_status():
+    """Return which LLM provider is active and whether credentials are configured."""
+    provider = get_llm_provider()
+    return {
+        "active_provider": provider,
+        "openrouter_configured": openrouter_configured(),
+        "sap_ai_core_configured": aicore_configured(),
+        "note": (
+            "SAP AI Core credentials not set — using mock fallback"
+            if provider == "sap_ai_core" and not aicore_configured()
+            else ("OpenRouter key not set — using mock fallback"
+                  if provider == "openrouter" and not openrouter_configured()
+                  else "LLM configured and ready")
+        ),
+    }
+
+
 @router.get("/suggest-pipeline")
-async def suggest_pipeline(use_case: str = "budget_vs_actual"):
+async def suggest_pipeline(use_case: str = "budget_vs_actual", llm_provider: str | None = None):
     """
     Generate the workflow pipeline using the configured LLM.
     Falls back to a deterministic POC template when no LLM is configured or on error.
@@ -42,7 +60,7 @@ async def suggest_pipeline(use_case: str = "budget_vs_actual"):
     logger.info("[pipeline] >>> LLM pipeline design STARTED (use_case=%s)", use_case)
     t0 = time.perf_counter()
     try:
-        config = llm_suggest_workflow(DESCRIPTION, [])
+        config = llm_suggest_workflow(DESCRIPTION, [], llm_provider=llm_provider)
         elapsed = time.perf_counter() - t0
         logger.info("[pipeline] <<< LLM pipeline design FINISHED in %.1fs — title=%r, agents=%s, calc_steps=%s, rules=%s",
                     elapsed, config.get("title"), config.get("agents"),
@@ -58,7 +76,7 @@ class DesignRequest(BaseModel):
     """Body for POST /llm/design-pipeline."""
     description: str = ""
     profiles: list = []
-    llm_provider: str = "openrouter"
+    llm_provider: str | None = None
 
 
 def _engine_library() -> dict:
@@ -177,9 +195,10 @@ def _suggest_mappings(columns: list) -> dict:
 async def suggest_workflow(
     description: str = Form(...),
     files: list[UploadFile] = File(...),
+    llm_provider: str | None = Form(None),
 ):
     """Upload files + describe the use case → LLM designs the workflow config."""
-    logger.info("[workflow] >>> suggest-workflow STARTED (%d file(s))", len(files))
+    logger.info("[workflow] >>> suggest-workflow STARTED (%d file(s), provider=%s)", len(files), llm_provider or "default")
     file_profiles = []
     saved = {}
 
@@ -201,12 +220,12 @@ async def suggest_workflow(
             "row_count": len(df),
         })
 
-    config = llm_suggest_workflow(description, file_profiles)
+    config = llm_suggest_workflow(description, file_profiles, llm_provider=llm_provider)
     logger.info("[workflow] <<< suggest-workflow FINISHED — title=%r, agents=%s", config.get("title"), config.get("agents"))
     return {"config": config, "files": file_profiles, "saved": saved}
 
 
 @router.post("/explain")
-def explain(prompt: str):
+def explain(prompt: str, llm_provider: str | None = None):
     """A5-style explanation via the configured LLM."""
-    return {"narrative": llm_explain(prompt)}
+    return {"narrative": llm_explain(prompt, llm_provider=llm_provider)}

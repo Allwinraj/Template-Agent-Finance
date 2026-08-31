@@ -21,13 +21,23 @@ OPENROUTER_FALLBACK_MODELS = [
 ]
 
 # --- SAP AI Core ---
-SAP_AICORE_BASE_URL = os.getenv("SAP_AICORE_BASE_URL", "")
-SAP_AICORE_AUTH_URL = os.getenv("SAP_AICORE_AUTH_URL", "")
-SAP_AICORE_CLIENT_ID = os.getenv("SAP_AICORE_CLIENT_ID", "")
-SAP_AICORE_CLIENT_SECRET = os.getenv("SAP_AICORE_CLIENT_SECRET", "")
-SAP_AICORE_RESOURCE_GROUP = os.getenv("SAP_AICORE_RESOURCE_GROUP", "default")
+AICORE_API_URL = os.getenv("AICORE_API_URL") or os.getenv("SAP_AICORE_BASE_URL", "")
+XSUAA_URL = os.getenv("XSUAA_URL") or os.getenv("SAP_AICORE_AUTH_URL", "")
+XSUAA_CLIENT_ID = os.getenv("XSUAA_CLIENT_ID") or os.getenv("SAP_AICORE_CLIENT_ID", "")
+XSUAA_CLIENT_SECRET = os.getenv("XSUAA_CLIENT_SECRET") or os.getenv("SAP_AICORE_CLIENT_SECRET", "")
+AICORE_RESOURCE_GROUP = os.getenv("AICORE_RESOURCE_GROUP") or os.getenv("SAP_AICORE_RESOURCE_GROUP", "default")
+AICORE_GPT41_DEPLOYMENT_ID = os.getenv("AICORE_GPT41_DEPLOYMENT_ID", "d7cec98f1a47f4f3")
+AICORE_DEPLOYMENT_ID = os.getenv("AICORE_DEPLOYMENT_ID") or AICORE_GPT41_DEPLOYMENT_ID
+AICORE_OPENAI_API_VERSION = os.getenv("AICORE_OPENAI_API_VERSION", "2024-12-01-preview")
+SAP_AICORE_MODEL = os.getenv("SAP_AICORE_MODEL", "gpt-4.1")
+
+# Aliases for backward compatibility
+SAP_AICORE_BASE_URL = AICORE_API_URL
+SAP_AICORE_AUTH_URL = XSUAA_URL
+SAP_AICORE_CLIENT_ID = XSUAA_CLIENT_ID
+SAP_AICORE_CLIENT_SECRET = XSUAA_CLIENT_SECRET
+SAP_AICORE_RESOURCE_GROUP = AICORE_RESOURCE_GROUP
 SAP_AICORE_DEPLOYMENT_URL = os.getenv("SAP_AICORE_DEPLOYMENT_URL", "")
-SAP_AICORE_MODEL = os.getenv("SAP_AICORE_MODEL", "gpt-4o-mini")
 
 # --- Server ---
 NEXUS_HOST = os.getenv("NEXUS_HOST", "127.0.0.1")
@@ -58,9 +68,9 @@ def openrouter_configured() -> bool:
 
 def aicore_configured() -> bool:
     """True when SAP AI Core credentials are present in .env."""
-    return bool(
-        os.getenv("SAP_AICORE_BASE_URL")
-        and os.getenv("SAP_AICORE_CLIENT_ID")
-        and os.getenv("SAP_AICORE_CLIENT_SECRET")
-        and os.getenv("SAP_AICORE_DEPLOYMENT_URL")
-    )
+    has_api = bool(AICORE_API_URL or SAP_AICORE_DEPLOYMENT_URL)
+    has_auth = bool(XSUAA_URL)
+    has_creds = bool(XSUAA_CLIENT_ID and XSUAA_CLIENT_SECRET)
+    has_deploy = bool(AICORE_GPT41_DEPLOYMENT_ID or AICORE_DEPLOYMENT_ID or SAP_AICORE_DEPLOYMENT_URL)
+    return bool(has_api and has_auth and has_creds and has_deploy)
+

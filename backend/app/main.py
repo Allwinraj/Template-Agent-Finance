@@ -20,9 +20,17 @@ from app.api.exceptions import router as exceptions_router
 from app.api.engines import router as engines_router
 from app.services import registry as registry_service
 from app.config import aicore_configured, OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODELS, openrouter_configured
+from app.config import llm_provider as get_llm_provider, SAP_AICORE_MODEL
 
-logging.getLogger("nexus").info("[llm] provider startup — openrouter_configured=%s, model=%s (fallbacks: %s)",
-    openrouter_configured(), OPENROUTER_MODEL, ", ".join(OPENROUTER_FALLBACK_MODELS))
+_active_provider = get_llm_provider()
+if _active_provider == "sap_ai_core":
+    logging.getLogger("nexus").info(
+        "[llm] provider startup — active=SAP_AI_CORE, configured=%s, model=%s",
+        aicore_configured(), SAP_AICORE_MODEL)
+else:
+    logging.getLogger("nexus").info(
+        "[llm] provider startup — active=OPENROUTER, configured=%s, model=%s (fallbacks: %s)",
+        openrouter_configured(), OPENROUTER_MODEL, ", ".join(OPENROUTER_FALLBACK_MODELS))
 
 app = FastAPI(
     title="Nexus 2.0 — Configurable Finance Operations Agent Platform",
@@ -51,15 +59,26 @@ app.include_router(engines_router, prefix="/api")
 
 @app.get("/")
 def root():
+    provider = get_llm_provider()
+    if provider == "sap_ai_core":
+        is_ready = aicore_configured()
+        model = SAP_AICORE_MODEL
+    else:
+        is_ready = openrouter_configured()
+        model = OPENROUTER_MODEL
     return {
         "platform": "Nexus 2.0",
         "status": "running",
-        "llm": "SAP AI Core" if aicore_configured() else "mock fallback",
+        "llm_provider": provider,
+        "llm_configured": is_ready,
+        "llm_model": model,
+        "llm": f"{provider} ({model})" if is_ready else f"{provider} (mock fallback — credentials missing)",
         "endpoints": {
             "agents": "/agents",
             "workflows": "/workflows",
             "registry": "/registry/workflows",
             "llm": "/llm/suggest-workflow",
+            "llm_status": "/llm/status",
             "dashboard": "/dashboard/kpis",
             "exceptions": "/exceptions",
             "engines": "/api/calculators",

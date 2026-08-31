@@ -19,6 +19,7 @@ from app.agents.a4_validate import A4Validate
 from app.agents.a5_explain import A5Explain
 from app.agents.a6_coordinate import A6Coordinate
 from app.agents.ids import normalize_agent_list
+from app.config import llm_provider as _get_default_provider
 from app.services import audit_service
 from app.storage import insert, find_one, update, load
 
@@ -73,7 +74,7 @@ def run_workflow(workflow_id: str, files: dict | None = None) -> dict:
                          capability_id=f"{workflow_id}:v{wf.get('version', 1)}")
 
     payload = {"uploaded_paths": files or {}}
-    context = {"run_id": run_id, "workflow_id": workflow_id, "llm_provider": (config.get("llm_provider") or "openrouter")}
+    context = {"run_id": run_id, "workflow_id": workflow_id, "llm_provider": (config.get("llm_provider") or _get_default_provider())}
 
     try:
         for agent_id in agent_ids:
